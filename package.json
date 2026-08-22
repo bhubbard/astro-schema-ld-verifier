@@ -1,0 +1,69 @@
+{
+  "name": "astro-schema-ld-verifier",
+  "version": "0.1.0",
+  "description": "Astro Dev Toolbar plugin that checks whether rendered page JSON-LD semantics accurately reflect DOM content using Chrome Built-in AI (Gemini Nano)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./app": {
+      "types": "./dist/app.d.ts",
+      "import": "./dist/app.js",
+      "default": "./dist/app.js"
+    },
+    "./parser": {
+      "types": "./dist/parser.d.ts",
+      "import": "./dist/parser.js",
+      "default": "./dist/parser.js"
+    },
+    "./verifier": {
+      "types": "./dist/verifier.d.ts",
+      "import": "./dist/verifier.js",
+      "default": "./dist/verifier.js"
+    },
+    "./types": {
+      "types": "./dist/types.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "bun build src/index.ts src/app.ts src/parser.ts src/verifier.ts --outdir ./dist --external astro && tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
+  },
+  "keywords": [
+    "astro",
+    "astro-integration",
+    "astro-dev-toolbar",
+    "dev-toolbar",
+    "schema-org",
+    "json-ld",
+    "seo",
+    "chrome-ai",
+    "gemini-nano",
+    "prompt-api",
+    "built-in-ai",
+    "semantic-validation"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "astro": ">=5.0.0 <8.0.0"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "astro": "^5.4.0",
+    "typescript": "^5.8.0"
+  }
+}

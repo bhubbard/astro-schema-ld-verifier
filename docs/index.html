@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>astro-schema-ld-verifier — Brandon Hubbard Engineering</title>
+  <meta name="description" content="Verify rendered Schema.org structured data against actual DOM content.">
+  <meta property="og:title" content="astro-schema-ld-verifier">
+  <meta property="og:description" content="Verify rendered Schema.org structured data against actual DOM content.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  
+  <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <style>
+    /* Brandon Hubbard Swiss Grid Design Tokens */
+    :root {
+      --void: #0a0a0a;
+      --charcoal: #121212;
+      --concrete: #262626;
+      --titanium: #ffffff;
+      --steel: #888888;
+      --cobalt: #3B82F6;
+      --cyan: #06B6D4;
+      --emerald: #10B981;
+      --crimson: #F43F5E;
+      --accent: #10B981;
+      --font-ui: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      border-radius: 0 !important; /* Swiss Sharp 0px Rule */
+    }
+
+    body {
+      background-color: var(--void);
+      color: var(--titanium);
+      font-family: var(--font-ui);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* Swiss Grid Container */
+    .grid-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      border-left: 1px solid var(--concrete);
+      border-right: 1px solid var(--concrete);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Brand Navigation */
+    header {
+      border-bottom: 1px solid var(--concrete);
+      background: var(--void);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.5rem;
+    }
+
+    .brand-identity {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      text-decoration: none;
+      color: var(--titanium);
+    }
+
+    /* 1:1 Square BH Logomark Badge */
+    .brand-mark {
+      width: 42px;
+      height: 42px;
+      background: var(--titanium);
+      color: var(--void);
+      font-family: var(--font-ui);
+      font-weight: 800;
+      font-size: 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      letter-spacing: -1px;
+    }
+
+    .brand-meta {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .brand-name {
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .brand-title {
+      font-size: 0.72rem;
+      color: var(--steel);
+      font-family: var(--font-mono);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.5rem;
+    }
+
+    nav a {
+      color: var(--steel);
+      text-decoration: none;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      transition: color 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--titanium);
+    }
+
+    nav a span.idx {
+      color: var(--accent);
+    }
+
+    /* Hero Section */
+    .hero {
+      padding: 4rem 2rem;
+      border-bottom: 1px solid var(--concrete);
+      background: linear-gradient(180deg, var(--charcoal) 0%, var(--void) 100%);
+    }
+
+    .tag-strip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1.25rem;
+      border: 1px solid var(--concrete);
+      padding: 0.35rem 0.75rem;
+      background: var(--void);
+    }
+
+    .tag-strip .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .hero p.lead {
+      font-size: 1.25rem;
+      color: var(--steel);
+      max-width: 800px;
+      margin-bottom: 2rem;
+      font-weight: 400;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 1.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      border: 1px solid var(--concrete);
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--titanium);
+      color: var(--void);
+      border-color: var(--titanium);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: var(--void);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: var(--titanium);
+    }
+
+    .btn-secondary:hover {
+      background: var(--charcoal);
+      border-color: var(--steel);
+    }
+
+    /* Swiss 3-Column Grid Panels */
+    .section-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--concrete);
+      background: var(--charcoal);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .section-title {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--titanium);
+    }
+
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      border-bottom: 1px solid var(--concrete);
+    }
+
+    .feature-card {
+      padding: 2.5rem 2rem;
+      border-right: 1px solid var(--concrete);
+      border-bottom: 1px solid var(--concrete);
+      background: var(--void);
+    }
+
+    .feature-card:last-child {
+      border-right: none;
+    }
+
+    .feature-card .card-idx {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--accent);
+      margin-bottom: 1rem;
+      display: block;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      letter-spacing: -0.02em;
+    }
+
+    .feature-card p {
+      color: var(--steel);
+      font-size: 0.95rem;
+    }
+
+    /* Code Snippet & Interactive Architecture Section */
+    .code-section {
+      padding: 3rem 2rem;
+      border-bottom: 1px solid var(--concrete);
+      background: var(--charcoal);
+    }
+
+    .code-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .code-label {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--steel);
+      text-transform: uppercase;
+    }
+
+    .code-block {
+      background: var(--void);
+      border: 1px solid var(--concrete);
+      padding: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.9rem;
+      overflow-x: auto;
+      color: #e5e5e5;
+    }
+
+    pre {
+      margin: 0;
+    }
+
+    /* Chrome Flags Guide */
+    .flags-box {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      border: 1px solid var(--concrete);
+      background: var(--void);
+    }
+
+    .flags-box h4 {
+      font-family: var(--font-mono);
+      font-size: 0.88rem;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+      text-transform: uppercase;
+    }
+
+    .flags-box ul {
+      list-style: none;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: var(--steel);
+    }
+
+    .flags-box li {
+      margin-bottom: 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .flags-box li code {
+      color: var(--titanium);
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      padding: 2.5rem 2rem;
+      border-top: 1px solid var(--concrete);
+      background: var(--void);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--steel);
+    }
+
+    footer a {
+      color: var(--titanium);
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+
+    footer a:hover {
+      color: var(--accent);
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    @media (max-width: 768px) {
+      .feature-card {
+        border-right: none;
+      }
+      nav ul {
+        display: none;
+      }
+      footer {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="grid-container">
+    <!-- Brand Header -->
+    <header>
+      <div class="nav-inner">
+        <a href="https://brandonhubbard.com/" class="brand-identity">
+          <div class="brand-mark">BH</div>
+          <div class="brand-meta">
+            <span class="brand-name">BRANDON HUBBARD</span>
+            <span class="brand-title">Engineering Specification</span>
+          </div>
+        </a>
+        <nav>
+          <ul>
+            <li><a href="https://brandonhubbard.com/"><span class="idx">01.</span> Home</a></li>
+            <li><a href="https://brandonhubbard.com/branding" class="active"><span class="idx">02.</span> Branding</a></li>
+            <li><a href="https://brandonhubbard.com/blog"><span class="idx">03.</span> Notes</a></li>
+            <li><a href="https://webtools.brandonhubbard.com/"><span class="idx">04.</span> Tools</a></li>
+            <li><a href="https://github.com/bhubbard/astro-schema-ld-verifier" target="_blank" rel="noopener"><span class="idx">05.</span> GitHub ↗</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <main>
+      <section class="hero">
+        <div class="tag-strip">
+          <div class="dot"></div>
+          <span>Astro Dev Toolbar App // CHROME BUILT-IN AI</span>
+        </div>
+        <h1>astro-schema-ld-verifier</h1>
+        <p class="lead">Verify rendered Schema.org structured data against actual DOM content.</p>
+        <div class="hero-actions">
+          <a href="https://github.com/bhubbard/astro-schema-ld-verifier" class="btn btn-primary" target="_blank" rel="noopener">
+            View on GitHub ↗
+          </a>
+          <a href="#quickstart" class="btn btn-secondary">
+            Quickstart Spec ↓
+          </a>
+        </div>
+      </section>
+
+      <!-- Section: Architecture & Capabilities -->
+      <div class="section-header">
+        <span class="section-title">01. Architectural Specifications</span>
+        <span class="section-title" style="color: var(--accent);">STATUS: PRODUCTION READY</span>
+      </div>
+
+      <div class="feature-grid">
+        
+          <div class="feature-card">
+            <span class="card-idx">[ 01 // CAPABILITY ]</span>
+            <h3>Semantic Consistency</h3>
+            <p>Compares structured data claims (@type, author, steps, pricing) against rendered DOM text.</p>
+          </div>
+        
+          <div class="feature-card">
+            <span class="card-idx">[ 02 // CAPABILITY ]</span>
+            <h3>Ghost Claim Detection</h3>
+            <p>Identifies unstated claims or hallucinated schema entities that do not exist on the page.</p>
+          </div>
+        
+          <div class="feature-card">
+            <span class="card-idx">[ 03 // CAPABILITY ]</span>
+            <h3>Dev Toolbar Dashboard</h3>
+            <p>Visual tree explorer with finding badges, severity filters, and AI reasoning diagnostics.</p>
+          </div>
+        
+      </div>
+
+      <!-- Section: Installation & Code Example -->
+      <div class="section-header" id="quickstart">
+        <span class="section-title">02. Implementation & Usage</span>
+        <span class="section-title" style="color: var(--steel);">BUN / ASTRO 5+</span>
+      </div>
+
+      <section class="code-section">
+        <div class="code-header">
+          <span class="code-label">// Installation</span>
+          <span class="code-label">CLI</span>
+        </div>
+        <div class="code-block" style="margin-bottom: 2rem;">
+          <pre><code>bun add astro-schema-ld-verifier
+# or
+pnpm add astro-schema-ld-verifier</code></pre>
+        </div>
+
+        <div class="code-header">
+          <span class="code-label">// Configuration</span>
+          <span class="code-label">astro.config.mjs</span>
+        </div>
+        <div class="code-block">
+          <pre><code>// astro.config.mjs
+import { defineConfig } from "astro/config";
+import schemaLdVerifier from "astro-schema-ld-verifier";
+
+export default defineConfig({
+  integrations: [
+    schemaLdVerifier({
+      strictTypes: ["Article", "TechArticle", "FAQPage", "Product", "Event"]
+    })
+  ]
+});</code></pre>
+        </div>
+
+        <!-- Chrome AI Setup Guide -->
+        <div class="flags-box">
+          <h4>// Chrome Built-in AI Prerequisites</h4>
+          <ul>
+            <li><span>1.</span> Open <code>chrome://flags</code> in Google Chrome 128+</li>
+            <li><span>2.</span> Set <code>#prompt-api-for-gemini-nano</code> to <strong>Enabled</strong></li>
+            <li><span>3.</span> Set <code>#optimization-guide-on-device-model</code> to <strong>Enabled ByPassPerfRequirement</strong></li>
+            <li><span>4.</span> Restart Chrome and verify model status at <code>chrome://components</code></li>
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <!-- Brand Footer -->
+    <footer>
+      <div>
+        <span>© 2026 BRANDON HUBBARD. CODE AS CRAFT. RADICAL OWNERSHIP.</span>
+      </div>
+      <div class="footer-links">
+        <a href="https://brandonhubbard.com/branding">Brand Spec</a>
+        <a href="https://brandonhubbard.com/blog">Engineering Notes</a>
+        <a href="https://webtools.brandonhubbard.com/">Web Tools</a>
+        <a href="https://github.com/bhubbard">GitHub Profile</a>
+      </div>
+    </footer>
+  </div>
+
+</body>
+</html>

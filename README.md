@@ -5,10 +5,13 @@
 [![Chrome Built-in AI](https://img.shields.io/badge/Chrome%20Built--in%20AI-Gemini%20Nano-4285F4.svg?style=flat-square&logo=googlechrome&logoColor=white)](https://developer.chrome.com/docs/ai/built-in)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8+-3178C6.svg?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](LICENSE)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-code.brandonhubbard.com-brightgreen?logo=github)](https://code.brandonhubbard.com/astro-schema-ld-verifier/)
 
 > Dev-time validation **Astro Dev Toolbar** plugin that audits whether rendered page semantics (JSON-LD `<script type="application/ld+json">`) accurately reflect the article/page's actual DOM content using on-device **Gemini Nano** (`window.ai.languageModel`).
 
 Flag missing entities, mismatched authors, unstated claims, fabricated product prices, and ghost steps before publishing to production!
+
+> 🎮 **Live Interactive Visualizer & Demo:** [astro-schema-ld-verifier on code.brandonhubbard.com](https://code.brandonhubbard.com/astro-schema-ld-verifier/)
 
 ---
 
